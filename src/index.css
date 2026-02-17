@@ -66,3 +66,58 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+/* Nuevo estilo para secciones */
+h2 { margin-left: 20px; color: var(--dark); font-size: 1.2rem; }
+
+.top-section {
+  background: #fff0f0;
+  padding: 20px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.horizontal-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 15px;
+  padding: 10px 20px;
+}
+
+.horizontal-scroll .card {
+  min-width: 280px;
+  border-top: 4px solid gold;
+}
+
+.tag-tematico {
+  background: var(--dark);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.description {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 10px 0;
+}
+
+.rating-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9f9f9;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.stars { color: #f1c40f; font-weight: bold; }
+
+.vote-buttons button {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 2px 8px;
+  margin-left: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+}

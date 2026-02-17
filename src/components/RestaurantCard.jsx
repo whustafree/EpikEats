@@ -1,45 +1,39 @@
 import React, { useState } from 'react';
 
 function RestaurantCard({ local }) {
-  const [resenas, setResenas] = useState([]);
-  const [input, setInput] = useState("");
+  const [voto, setVoto] = useState(local.estrellas || 0);
 
-  const handleAdd = (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    setResenas([input, ...resenas]);
-    setInput("");
+  // Función para dibujar las estrellas según el puntaje
+  const renderStars = (n) => {
+    return "⭐".repeat(n) + "☆".repeat(5 - n);
   };
 
   return (
     <div className="card">
-      <div className="card-image" style={{ backgroundImage: `url(${local.imagen})` }}>
-        <span className="badge">{local.tematica}</span>
-      </div>
       <div className="card-body">
-        <div className="card-header">
-          <h3>{local.nombre}</h3>
-          <span className="rating">⭐ {local.rating}</span>
-        </div>
-        <p className="address">📍 {local.ubicacion}</p>
-        
-        <div className="reviews">
-          {resenas.slice(0, 2).map((r, i) => (
-            <p key={i} className="review-text">" {r} "</p>
-          ))}
-          <form onSubmit={handleAdd} className="review-form">
-            <input 
-              value={input} 
-              onChange={(e) => setInput(e.target.value)} 
-              placeholder="Deja una reseña..." 
-            />
-            <button type="submit">p</button>
-          </form>
+        <div className="card-top">
+          <span className="tag-tematico">{local.tematica || "🍽️ Local Real"}</span>
+          <span className="dist-tag">{local.distancia ? `${(local.distancia * 1000).toFixed(0)}m` : ""}</span>
         </div>
         
-        <a href={`https://instagram.com/${local.instagram}`} target="_blank" className="btn-social">
-          Ver Instagram
-        </a>
+        <h3>{local.nombre}</h3>
+        <p className="description">{local.descripcion || "Encontrado vía GPS. ¡Ven a descubrirlo!"}</p>
+        
+        <div className="rating-area">
+          <span className="stars">{renderStars(voto)}</span>
+          <div className="vote-buttons">
+            <button onClick={() => setVoto(Math.min(5, voto + 1))}>+</button>
+            <button onClick={() => setVoto(Math.max(0, voto - 1))}>-</button>
+          </div>
+        </div>
+
+        <div className="card-footer">
+          <p className="addr">📍 {local.ubicacion || "Ver en mapa"}</p>
+          <a href={`https://www.google.com/maps/dir/?api=1&destination=${local.lat},${local.lng}`} 
+             target="_blank" className="btn-go">
+            ¿Cómo llegar?
+          </a>
+        </div>
       </div>
     </div>
   );
