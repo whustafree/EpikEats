@@ -18,11 +18,12 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [miUbicacion, setMiUbicacion] = useState(null);
   const [catActiva, setCatActiva] = useState('13000');
+  const [soloAbiertos, setSoloAbiertos] = useState(false); // Estado para el filtro
   const [view, setView] = useState('grid');
 
-  const cargarDatos = (lat, lng, catId) => {
+  const cargarDatos = (lat, lng, catId, abiertos) => {
     setLoading(true);
-    buscarLocalesPro(lat, lng, catId).then(res => {
+    buscarLocalesPro(lat, lng, catId, abiertos).then(res => {
       setLocales(res);
       setLoading(false);
     });
@@ -32,14 +33,22 @@ function App() {
     navigator.geolocation.getCurrentPosition((pos) => {
       const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       setMiUbicacion(coords);
-      cargarDatos(coords.lat, coords.lng, catActiva);
+      cargarDatos(coords.lat, coords.lng, catActiva, soloAbiertos);
     });
   }, []);
+
+  const manejarCambioFiltro = () => {
+    const nuevoEstado = !soloAbiertos;
+    setSoloAbiertos(nuevoEstado);
+    if (miUbicacion) {
+      cargarDatos(miUbicacion.lat, miUbicacion.lng, catActiva, nuevoEstado);
+    }
+  };
 
   const cambiarCategoria = (id) => {
     setCatActiva(id);
     if (miUbicacion) {
-      cargarDatos(miUbicacion.lat, miUbicacion.lng, id);
+      cargarDatos(miUbicacion.lat, miUbicacion.lng, id, soloAbiertos);
     }
   };
 
@@ -53,7 +62,6 @@ function App() {
         </div>
       </nav>
 
-      {/* Barrita de Filtros Estilo Uber Eats */}
       <div className="filter-bar">
         {CATEGORIAS.map(cat => (
           <button 
@@ -67,13 +75,32 @@ function App() {
         ))}
       </div>
 
+      {/* Selector de Abiertos Ahora */}
+      <div className="status-filter-container">
+        <label className="switch-label">
+          <input 
+            type="checkbox" 
+            checked={soloAbiertos} 
+            onChange={manejarCambioFiltro} 
+          />
+          <span className="slider"></span>
+          <span className="label-text">Abiertos ahora 🟢</span>
+        </label>
+      </div>
+
       <main className="container">
         {loading ? (
-          <div className="loader">Buscando {CATEGORIAS.find(c => c.id === catActiva).nombre}...</div>
+          <div className="loader">Buscando locales...</div>
         ) : (
           view === 'grid' ? (
             <div className="grid">
-              {locales.length > 0 ? locales.map(l => <RestaurantCard key={l.id} local={l} />) : <p>No hay locales en esta categoría cerca de ti.</p>}
+              {locales.length > 0 ? (
+                locales.map(l => <RestaurantCard key={l.id} local={l} />)
+              ) : (
+                <div className="no-results">
+                  <p>Parece que no hay locales abiertos en esta categoría ahora. 🌙</p>
+                </div>
+              )}
             </div>
           ) : (
             <Mapa locales={locales} centro={miUbicacion} />
@@ -81,7 +108,7 @@ function App() {
         )}
       </main>
       
-      <button className="fab-refresh" onClick={() => cargarDatos(miUbicacion.lat, miUbicacion.lng, catActiva)}>🔄</button>
+      <button className="fab-refresh" onClick={() => cargarDatos(miUbicacion.lat, miUbicacion.lng, catActiva, soloAbiertos)}>🔄</button>
     </div>
   );
 }

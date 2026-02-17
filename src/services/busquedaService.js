@@ -1,6 +1,6 @@
 const API_KEY = '2C4PATBQTB2GTH12GCHRYHJ542IUHLGJQM1XZ0XH1GICUW33';
 
-export const buscarLocalesPro = async (lat, lng, categoriaId = '13000') => {
+export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbiertos = false) => {
   const options = {
     method: 'GET',
     headers: {
@@ -10,11 +10,14 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000') => {
   };
 
   try {
-    // categoriaId 13000 es "Comida y Bebida" en general
-    const response = await fetch(
-      `https://api.foursquare.com/v3/places/search?ll=${lat},${lng}&categories=${categoriaId}&radius=5000&fields=fsq_id,name,categories,photos,rating,location,geocodes,distance&limit=20`,
-      options
-    );
+    // Añadimos &open_now=true si el usuario activa el filtro
+    let url = `https://api.foursquare.com/v3/places/search?ll=${lat},${lng}&categories=${categoriaId}&radius=5000&fields=fsq_id,name,categories,photos,rating,location,geocodes,distance&limit=20`;
+    
+    if (soloAbiertos) {
+      url += '&open_now=true';
+    }
+
+    const response = await fetch(url, options);
     const data = await response.json();
 
     return data.results.map(local => ({
@@ -31,7 +34,7 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000') => {
       distancia: (local.distance / 1000).toFixed(2)
     }));
   } catch (err) {
-    console.error("Error:", err);
+    console.error("Error al buscar:", err);
     return [];
   }
 };

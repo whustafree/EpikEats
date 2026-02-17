@@ -121,3 +121,37 @@ h2 { margin-left: 20px; color: var(--dark); font-size: 1.2rem; }
   cursor: pointer;
   border-radius: 5px;
 }
+.status-filter-container {
+  padding: 10px 20px;
+  background: white;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.switch-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.switch-label input {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+  accent-color: #2ecc71; /* Color verde para el check */
+}
+
+.label-text {
+  margin-left: 5px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: var(--light);
+  grid-column: 1 / -1;
+}
