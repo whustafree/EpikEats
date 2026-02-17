@@ -2,34 +2,39 @@ const API_KEY = 'fsq3htC0kDZNJP1JjnuuziGUPlmWbtbT/brTP1YXvWIJZUo=';
 
 export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbiertos = false) => {
   try {
-    const searchParams = new URLSearchParams({
+    // Construimos la URL con la versión INCRUSTADA (Imposible de borrar)
+    const params = new URLSearchParams({
       ll: `${lat},${lng}`,
       categories: categoriaId,
       radius: '5000',
       fields: 'fsq_id,name,categories,photos,rating,location,geocodes,distance',
-      limit: '20'
+      limit: '20',
+      v: '20231010' // <--- ESTO ES LA SOLUCIÓN AL ERROR 410
     });
 
     if (soloAbiertos) {
-      searchParams.append('open_now', 'true');
+      params.append('open_now', 'true');
     }
 
-    // Usamos el formato más simple posible para las cabeceras
+    console.log("🚀 Consultando:", params.toString());
+
     const response = await fetch(
-      `https://api.foursquare.com/v3/places/search?${searchParams.toString()}`, 
+      `https://api.foursquare.com/v3/places/search?${params.toString()}`, 
       {
         method: 'GET',
         headers: {
           Accept: 'application/json',
-          Authorization: API_KEY,
-          'fsq-version': '20231010' // Esta es la clave del error 410
+          Authorization: API_KEY
         }
       }
     );
 
-    if (!response.ok) throw new Error(`Error API: ${response.status}`);
+    if (!response.ok) {
+        throw new Error(`Error API Foursquare: ${response.status}`);
+    }
 
     const data = await response.json();
+    
     if (!data.results) return [];
 
     return data.results.map(local => ({
@@ -47,7 +52,7 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbie
     }));
 
   } catch (err) {
-    console.error("Fallo búsqueda:", err);
+    console.error("❌ Fallo crítico:", err);
     return [];
   }
 };
