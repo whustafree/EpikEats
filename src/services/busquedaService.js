@@ -1,45 +1,37 @@
-export const calcularDistancia = (lat1, lon1, lat2, lon2) => {
-  const toRad = (value) => (value * Math.PI) / 180;
-  const R = 6371; 
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
+const API_KEY = '2C4PATBQTB2GTH12GCHRYHJ542IUHLGJQM1XZ0XH1GICUW33';
 
-export const buscarLocalesCercanos = async (lat, lng) => {
-  const radio = 5000; 
-  const query = `
-    [out:json];
-    (
-      node["amenity"~"restaurant|cafe|fast_food"](around:${radio},${lat},${lng});
-      way["amenity"~"restaurant|cafe|fast_food"](around:${radio},${lat},${lng});
-    );
-    out center;
-  `;
-  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-  
+export const buscarLocalesPro = async (lat, lng, categoriaId = '13000') => {
+  const options = {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+      Authorization: API_KEY
+    }
+  };
+
   try {
-    const response = await fetch(url);
+    // categoriaId 13000 es "Comida y Bebida" en general
+    const response = await fetch(
+      `https://api.foursquare.com/v3/places/search?ll=${lat},${lng}&categories=${categoriaId}&radius=5000&fields=fsq_id,name,categories,photos,rating,location,geocodes,distance&limit=20`,
+      options
+    );
     const data = await response.json();
-    return data.elements.map(el => {
-      const lLat = el.lat || el.center.lat;
-      const lLng = el.lon || el.center.lon;
-      return {
-        id: el.id,
-        nombre: el.tags.name || "Local sin nombre",
-        categoria: el.tags.amenity || "Comida",
-        lat: lLat,
-        lng: lLng,
-        distancia: calcularDistancia(lat, lng, lLat, lLng)
-      };
-    }).sort((a, b) => a.distancia - b.distancia);
-  } catch (error) {
-    console.error("Error en la API de búsqueda:", error);
+
+    return data.results.map(local => ({
+      id: local.fsq_id,
+      nombre: local.name,
+      categoria: local.categories[0]?.name || "Restaurante",
+      imagen: local.photos?.[0] 
+        ? `${local.photos[0].prefix}400x300${local.photos[0].suffix}` 
+        : "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400",
+      rating: local.rating ? (local.rating / 2).toFixed(1) : "4.2",
+      ubicacion: local.location?.address || "Dirección en mapa",
+      lat: local.geocodes.main.latitude,
+      lng: local.geocodes.main.longitude,
+      distancia: (local.distance / 1000).toFixed(2)
+    }));
+  } catch (err) {
+    console.error("Error:", err);
     return [];
   }
 };

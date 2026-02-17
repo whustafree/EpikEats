@@ -89,3 +89,81 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: #f8f9fa; }
 .map-container { height: 70vh; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 .loader { text-align: center; padding: 50px; color: var(--dark); font-weight: 600; }
 .no-results { text-align: center; width: 100%; color: var(--light); padding: 50px; }
+.card-img-container {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border-radius: 15px 15px 0 0;
+}
+
+.card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.card-info-pro { padding: 15px; }
+.info-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+.info-header h3 { margin: 0; font-size: 1.1rem; color: #2b2d42; }
+.star-rating { background: #f1c40f; color: white; padding: 2px 8px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; }
+.address-text { color: #8d99ae; font-size: 0.85rem; margin: 5px 0; }
+.info-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.btn-go-pro { background: #ef233c; color: white; text-decoration: none; padding: 8px 15px; border-radius: 10px; font-weight: bold; font-size: 0.9rem; }
+
+.fab-refresh {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background: #2b2d42;
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 2000;
+}
+.filter-bar {
+  display: flex;
+  overflow-x: auto;
+  padding: 15px;
+  background: white;
+  gap: 15px;
+  scrollbar-width: none; /* Esconde scroll en Firefox */
+}
+
+.filter-bar::-webkit-scrollbar { display: none; } /* Esconde scroll en Chrome/Safari */
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f1f2f6;
+  border: none;
+  min-width: 70px;
+  padding: 10px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filter-item.active {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.05);
+}
+
+.filter-icon { font-size: 1.5rem; margin-bottom: 5px; }
+.filter-label { font-size: 0.75rem; font-weight: bold; }
+
+/* Ajuste para que el mapa no tape los filtros */
+.map-container { height: calc(100vh - 180px); }

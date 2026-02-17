@@ -1,37 +1,25 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 function RestaurantCard({ local }) {
-  const [voto, setVoto] = useState(local.estrellas || 0);
-
-  // Función para dibujar las estrellas según el puntaje
-  const renderStars = (n) => {
-    return "⭐".repeat(n) + "☆".repeat(5 - n);
-  };
-
   return (
     <div className="card">
-      <div className="card-body">
-        <div className="card-top">
-          <span className="tag-tematico">{local.tematica || "🍽️ Local Real"}</span>
-          <span className="dist-tag">{local.distancia ? `${(local.distancia * 1000).toFixed(0)}m` : ""}</span>
+      <div className="card-img-container" style={{ backgroundImage: `url(${local.imagen})` }}>
+        <div className="card-badge">{local.categoria}</div>
+      </div>
+      <div className="card-info-pro">
+        <div className="info-header">
+          <h3>{local.nombre}</h3>
+          <span className="star-rating">⭐ {local.rating}</span>
         </div>
-        
-        <h3>{local.nombre}</h3>
-        <p className="description">{local.descripcion || "Encontrado vía GPS. ¡Ven a descubrirlo!"}</p>
-        
-        <div className="rating-area">
-          <span className="stars">{renderStars(voto)}</span>
-          <div className="vote-buttons">
-            <button onClick={() => setVoto(Math.min(5, voto + 1))}>+</button>
-            <button onClick={() => setVoto(Math.max(0, voto - 1))}>-</button>
-          </div>
-        </div>
-
-        <div className="card-footer">
-          <p className="addr">📍 {local.ubicacion || "Ver en mapa"}</p>
-          <a href={`https://www.google.com/maps/dir/?api=1&destination=${local.lat},${local.lng}`} 
-             target="_blank" className="btn-go">
-            ¿Cómo llegar?
+        <p className="address-text">📍 {local.ubicacion}</p>
+        <div className="info-footer">
+          <span className="dist-text">📏 {local.distancia} km</span>
+          <a 
+            href={`https://www.google.com/maps/dir/?api=1&destination=${local.lat},${local.lng}`} 
+            target="_blank" 
+            className="btn-go-pro"
+          >
+            Ir Ahora
           </a>
         </div>
       </div>
