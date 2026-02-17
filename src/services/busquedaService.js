@@ -1,13 +1,13 @@
 const API_KEY = 'fsq3htC0kDZNJP1JjnuuziGUPlmWbtbT/brTP1YXvWIJZUo=';
 
 export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbiertos = false) => {
+  // Configuración obligatoria para Foursquare V3
   const options = {
     method: 'GET',
     headers: {
-      accept: 'application/json',
-      Authorization: API_KEY,
-      // ESTO ES LO QUE FALTA PARA EVITAR EL ERROR 410
-      'fsq-version': '20231010' 
+      'Accept': 'application/json',
+      'Authorization': API_KEY,
+      'fsq-version': '20231010' // <--- ESTO ES LO CRÍTICO PARA EVITAR EL ERROR 410
     }
   };
 
@@ -18,10 +18,13 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbie
       url += '&open_now=true';
     }
 
+    console.log("Consultando Foursquare..."); // Para verificar que el código nuevo está corriendo
+
     const response = await fetch(url, options);
     
+    // Si la API falla, lanzamos error para manejarlo abajo
     if (!response.ok) {
-        console.error("Error de Foursquare:", response.status);
+        console.error(`Error API: ${response.status} ${response.statusText}`);
         return []; 
     }
 
@@ -32,18 +35,18 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbie
     return data.results.map(local => ({
       id: local.fsq_id,
       nombre: local.name,
-      categoria: local.categories[0]?.name || "Restaurante",
+      categoria: local.categories[0]?.name || "General",
       imagen: local.photos?.[0] 
         ? `${local.photos[0].prefix}400x300${local.photos[0].suffix}` 
-        : "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400",
+        : "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400",
       rating: local.rating ? (local.rating / 2).toFixed(1) : "4.0", 
-      ubicacion: local.location?.address || "Rancagua",
+      ubicacion: local.location?.address || "Ver en mapa",
       lat: local.geocodes.main.latitude,
       lng: local.geocodes.main.longitude,
       distancia: (local.distance / 1000).toFixed(2)
     }));
   } catch (err) {
-    console.error("Fallo de red:", err);
+    console.error("Error de conexión:", err);
     return []; 
   }
 };
