@@ -18,12 +18,30 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [miUbicacion, setMiUbicacion] = useState(null);
   const [catActiva, setCatActiva] = useState('13000');
-  const [soloAbiertos, setSoloAbiertos] = useState(false); // Estado para el filtro
   const [view, setView] = useState('grid');
+  const [favoritos, setFavoritos] = useState([]);
+  const [darkMode, setDarkMode] = useState(false);
 
-  const cargarDatos = (lat, lng, catId, abiertos) => {
+  // Cargar Favoritos al iniciar
+  useEffect(() => {
+    const favs = JSON.parse(localStorage.getItem('epik_favs')) || [];
+    setFavoritos(favs);
+  }, []);
+
+  const toggleFavorito = (local) => {
+    let nuevosFavs;
+    if (favoritos.some(f => f.id === local.id)) {
+      nuevosFavs = favoritos.filter(f => f.id !== local.id);
+    } else {
+      nuevosFavs = [...favoritos, local];
+    }
+    setFavoritos(nuevosFavs);
+    localStorage.setItem('epik_favs', JSON.stringify(nuevosFavs));
+  };
+
+  const cargarDatos = (lat, lng, catId) => {
     setLoading(true);
-    buscarLocalesPro(lat, lng, catId, abiertos).then(res => {
+    buscarLocalesPro(lat, lng, catId).then(res => {
       setLocales(res);
       setLoading(false);
     });
@@ -33,30 +51,25 @@ function App() {
     navigator.geolocation.getCurrentPosition((pos) => {
       const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       setMiUbicacion(coords);
-      cargarDatos(coords.lat, coords.lng, catActiva, soloAbiertos);
+      cargarDatos(coords.lat, coords.lng, catActiva);
     });
   }, []);
-
-  const manejarCambioFiltro = () => {
-    const nuevoEstado = !soloAbiertos;
-    setSoloAbiertos(nuevoEstado);
-    if (miUbicacion) {
-      cargarDatos(miUbicacion.lat, miUbicacion.lng, catActiva, nuevoEstado);
-    }
-  };
 
   const cambiarCategoria = (id) => {
     setCatActiva(id);
     if (miUbicacion) {
-      cargarDatos(miUbicacion.lat, miUbicacion.lng, id, soloAbiertos);
+      cargarDatos(miUbicacion.lat, miUbicacion.lng, id);
     }
   };
 
   return (
-    <div className="app">
+    <div className={`app ${darkMode ? 'dark-mode' : ''}`}>
       <nav className="navbar">
         <h1 className="logo">EpikEats 🍔</h1>
         <div className="nav-actions">
+          <button onClick={() => setDarkMode(!darkMode)} className="btn-icon">
+            {darkMode ? '☀️' : '🌙'}
+          </button>
           <button onClick={() => setView('grid')} className={view === 'grid' ? 'active' : ''}>Lista</button>
           <button onClick={() => setView('map')} className={view === 'map' ? 'active' : ''}>Mapa</button>
         </div>
@@ -75,32 +88,22 @@ function App() {
         ))}
       </div>
 
-      {/* Selector de Abiertos Ahora */}
-      <div className="status-filter-container">
-        <label className="switch-label">
-          <input 
-            type="checkbox" 
-            checked={soloAbiertos} 
-            onChange={manejarCambioFiltro} 
-          />
-          <span className="slider"></span>
-          <span className="label-text">Abiertos ahora 🟢</span>
-        </label>
-      </div>
-
       <main className="container">
         {loading ? (
-          <div className="loader">Buscando locales...</div>
+          <div className="grid">
+            {[1,2,3,4].map(n => <div key={n} className="skeleton-card"></div>)}
+          </div>
         ) : (
           view === 'grid' ? (
             <div className="grid">
-              {locales.length > 0 ? (
-                locales.map(l => <RestaurantCard key={l.id} local={l} />)
-              ) : (
-                <div className="no-results">
-                  <p>Parece que no hay locales abiertos en esta categoría ahora. 🌙</p>
-                </div>
-              )}
+              {locales.length > 0 ? locales.map(l => (
+                <RestaurantCard 
+                  key={l.id} 
+                  local={l} 
+                  esFavorito={favoritos.some(f => f.id === l.id)}
+                  onFav={() => toggleFavorito(l)}
+                />
+              )) : <p className="no-results">No hay locales cerca :(</p>}
             </div>
           ) : (
             <Mapa locales={locales} centro={miUbicacion} />
@@ -108,7 +111,7 @@ function App() {
         )}
       </main>
       
-      <button className="fab-refresh" onClick={() => cargarDatos(miUbicacion.lat, miUbicacion.lng, catActiva, soloAbiertos)}>🔄</button>
+      <button className="fab-refresh" onClick={() => cargarDatos(miUbicacion.lat, miUbicacion.lng, catActiva)}>🔄</button>
     </div>
   );
 }
