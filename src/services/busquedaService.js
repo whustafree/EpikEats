@@ -1,14 +1,17 @@
 const API_KEY = 'fsq3htC0kDZNJP1JjnuuziGUPlmWbtbT/brTP1YXvWIJZUo=';
 
 export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbiertos = false) => {
-  // Configuración obligatoria para Foursquare V3
+  // Construimos las cabeceras de forma estricta
+  const misCabeceras = new Headers();
+  misCabeceras.append('Accept', 'application/json');
+  misCabeceras.append('Authorization', API_KEY.trim()); // Limpiamos espacios
+  misCabeceras.append('fsq-version', '20231010');
+
   const options = {
     method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Authorization': API_KEY,
-      'fsq-version': '20231010' // <--- ESTO ES LO CRÍTICO PARA EVITAR EL ERROR 410
-    }
+    headers: misCabeceras,
+    mode: 'cors', // Importante para navegadores
+    cache: 'no-cache' // Evita que lea versiones viejas
   };
 
   try {
@@ -18,13 +21,13 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbie
       url += '&open_now=true';
     }
 
-    console.log("Consultando Foursquare..."); // Para verificar que el código nuevo está corriendo
+    console.log("🚀 Enviando petición a Foursquare con headers...");
 
     const response = await fetch(url, options);
     
-    // Si la API falla, lanzamos error para manejarlo abajo
     if (!response.ok) {
-        console.error(`Error API: ${response.status} ${response.statusText}`);
+        // Si sigue el error, esto nos dirá exactamente qué pasó en la consola
+        console.error(`❌ Error Foursquare: ${response.status} - Verifica tu API Key o Conexión`);
         return []; 
     }
 
@@ -35,18 +38,18 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbie
     return data.results.map(local => ({
       id: local.fsq_id,
       nombre: local.name,
-      categoria: local.categories[0]?.name || "General",
+      categoria: local.categories[0]?.name || "Restaurante",
       imagen: local.photos?.[0] 
         ? `${local.photos[0].prefix}400x300${local.photos[0].suffix}` 
         : "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400",
       rating: local.rating ? (local.rating / 2).toFixed(1) : "4.0", 
-      ubicacion: local.location?.address || "Ver en mapa",
+      ubicacion: local.location?.address || "Rancagua",
       lat: local.geocodes.main.latitude,
       lng: local.geocodes.main.longitude,
       distancia: (local.distance / 1000).toFixed(2)
     }));
   } catch (err) {
-    console.error("Error de conexión:", err);
+    console.error("❌ Fallo crítico:", err);
     return []; 
   }
 };
