@@ -5,7 +5,9 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbie
     method: 'GET',
     headers: {
       accept: 'application/json',
-      Authorization: API_KEY 
+      Authorization: API_KEY,
+      // ESTO ES LO QUE FALTA PARA EVITAR EL ERROR 410
+      'fsq-version': '20231010' 
     }
   };
 
@@ -25,7 +27,6 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbie
 
     const data = await response.json();
 
-    // Si no hay resultados, retornamos lista vacía en lugar de undefined
     if (!data.results) return [];
 
     return data.results.map(local => ({
@@ -34,7 +35,7 @@ export const buscarLocalesPro = async (lat, lng, categoriaId = '13000', soloAbie
       categoria: local.categories[0]?.name || "Restaurante",
       imagen: local.photos?.[0] 
         ? `${local.photos[0].prefix}400x300${local.photos[0].suffix}` 
-        : "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400", // Imagen por defecto si no hay foto
+        : "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400",
       rating: local.rating ? (local.rating / 2).toFixed(1) : "4.0", 
       ubicacion: local.location?.address || "Rancagua",
       lat: local.geocodes.main.latitude,
