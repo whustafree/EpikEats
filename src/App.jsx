@@ -20,9 +20,8 @@ function App() {
   const [catActiva, setCatActiva] = useState('13000');
   const [view, setView] = useState('grid');
   const [favoritos, setFavoritos] = useState([]);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true); // Empezamos en modo oscuro por defecto
 
-  // Cargar Favoritos al iniciar
   useEffect(() => {
     const favs = JSON.parse(localStorage.getItem('epik_favs')) || [];
     setFavoritos(favs);
@@ -40,11 +39,36 @@ function App() {
   };
 
   const cargarDatos = (lat, lng, catId) => {
+    // Si ya estamos cargando, no hacer nada (evita doble clic)
+    if (loading) return;
+    
     setLoading(true);
-    buscarLocalesPro(lat, lng, catId).then(res => {
-      setLocales(res);
+    
+    buscarLocalesPro(lat, lng, catId).then(nuevosResultados => {
+      // PROTECCIÓN ANTI-BORRADO:
+      // Si la búsqueda falla (array vacío) y ya teníamos datos, 
+      // mostramos alerta y MANTENEMOS los datos viejos.
+      if (nuevosResultados.length === 0 && locales.length > 0) {
+        alert("⚠️ La red está lenta. Mantenemos los datos anteriores.");
+        setLoading(false);
+        return; 
+      }
+      
+      setLocales(nuevosResultados);
       setLoading(false);
     });
+  };
+
+  // Función para forzar actualización manual (Botón Refresh)
+  const refrescarManual = () => {
+    if (miUbicacion) {
+      // Limpiamos la caché para obligar a buscar datos frescos
+      const cacheKey = `epik_cache_${miUbicacion.lat.toFixed(3)}_${miUbicacion.lng.toFixed(3)}_${catActiva}`;
+      sessionStorage.removeItem(cacheKey);
+      cargarDatos(miUbicacion.lat, miUbicacion.lng, catActiva);
+    } else {
+        alert("Esperando GPS...");
+    }
   };
 
   useEffect(() => {
@@ -52,7 +76,10 @@ function App() {
       const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       setMiUbicacion(coords);
       cargarDatos(coords.lat, coords.lng, catActiva);
-    });
+    }, (err) => {
+        console.error(err);
+        alert("Necesitamos tu ubicación para encontrar picadas.");
+    }, { enableHighAccuracy: true });
   }, []);
 
   const cambiarCategoria = (id) => {
@@ -65,8 +92,12 @@ function App() {
   return (
     <div className={`app ${darkMode ? 'dark-mode' : ''}`}>
       <nav className="navbar">
-        <h1 className="logo">EpikEats 🍔</h1>
+        <h1 className="logo">EpikEats_</h1>
         <div className="nav-actions">
+           {/* BOTÓN REFRESCAR AHORA ESTÁ AQUÍ ARRIBA (SEGURO) */}
+          <button onClick={refrescarManual} className="btn-icon" title="Actualizar Datos">
+            🔄
+          </button>
           <button onClick={() => setDarkMode(!darkMode)} className="btn-icon">
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -91,7 +122,8 @@ function App() {
       <main className="container">
         {loading ? (
           <div className="grid">
-            {[1,2,3,4].map(n => <div key={n} className="skeleton-card"></div>)}
+            {/* Skeleton Loading (Cargando bonito) */}
+            {[1,2,3,4,5,6].map(n => <div key={n} className="skeleton-card"></div>)}
           </div>
         ) : (
           view === 'grid' ? (
@@ -103,7 +135,12 @@ function App() {
                   esFavorito={favoritos.some(f => f.id === l.id)}
                   onFav={() => toggleFavorito(l)}
                 />
-              )) : <p className="no-results">No hay locales cerca :(</p>}
+              )) : (
+                <div className="error-container">
+                    <p className="no-results">📡 No encontramos señales de vida...</p>
+                    <button className="btn-retry" onClick={refrescarManual}>Reintentar Escaneo</button>
+                </div>
+              )}
             </div>
           ) : (
             <Mapa locales={locales} centro={miUbicacion} />
@@ -111,7 +148,7 @@ function App() {
         )}
       </main>
       
-      <button className="fab-refresh" onClick={() => cargarDatos(miUbicacion.lat, miUbicacion.lng, catActiva)}>🔄</button>
+      {/* ELIMINADO EL BOTÓN FLOTANTE INFERIOR PARA EVITAR CLICS ACCIDENTALES */}
     </div>
   );
 }
